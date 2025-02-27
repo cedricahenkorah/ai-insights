@@ -17,7 +17,11 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-export default function FileUpload() {
+export default function FileUpload({
+  onAnalysisComplete,
+}: {
+  onAnalysisComplete: (data: string) => void;
+}) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -116,17 +120,22 @@ export default function FileUpload() {
 
   const handleSubmit = async () => {
     if (!selectedFile) return;
-
     setIsSubmitting(true);
 
     try {
-      // Simulate file upload - replace with your actual upload logic
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-      // Handle successful upload
+      const response = await fetch("/api/analyze-csv", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.text();
+      onAnalysisComplete(data); // Send result to parent component
       clearFile();
     } catch (err) {
-      setError("Failed to upload file. Please try again.");
+      setError("Failed to process CSV.");
     } finally {
       setIsSubmitting(false);
     }
@@ -220,7 +229,8 @@ export default function FileUpload() {
               type="file"
               className="hidden"
               onChange={handleFileChange}
-              accept="image/*,.pdf,.txt,.md,.csv"
+              // accept="image/*,.pdf,.txt,.md,.csv"
+              accept=".csv"
               aria-label="Upload file"
             />
           </label>
@@ -266,7 +276,7 @@ export default function FileUpload() {
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Send
+                  Analyze CSV
                 </>
               )}
             </Button>
