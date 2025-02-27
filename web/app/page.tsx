@@ -27,8 +27,8 @@ export default function Chat() {
           <div className="flex flex-col items-center">
             <div className="flex items-center mb-4">
               <div className="bg-white rounded-full p-2 mr-2 flex gap-x-2 items-center">
-                <Bot className="h-8 w-8 text-black" />
-                <span className="font-bold text-base lg:text-2xl">
+                <Bot className="h-8 w-8 text-indigo-600" />
+                <span className="font-bold text-base lg:text-2xl text-indigo-600">
                   AI INSIGHTS
                 </span>
               </div>
@@ -43,16 +43,16 @@ export default function Chat() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-8">
-              <Card className="border-neutral-800 p-4 transition-colors cursor-pointer">
+              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
                 <p>Analyze revenue trends from my financial data.</p>
               </Card>
-              <Card className="border-neutral-800 p-4 transition-colors cursor-pointer">
+              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
                 <p>Identify key spending patterns in my CSV file.</p>
               </Card>
-              <Card className="border-neutral-800 p-4 transition-colors cursor-pointer">
+              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
                 <p>Predict future cash flow based on historical data.</p>
               </Card>
-              <Card className="border-neutral-800 p-4 transition-colors cursor-pointer">
+              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
                 <p>Summarize my investment portfolio performance.</p>
               </Card>
             </div>

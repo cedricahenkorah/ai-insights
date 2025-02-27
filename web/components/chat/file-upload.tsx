@@ -16,11 +16,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import axios from "axios";
 
 export default function FileUpload({
   onAnalysisComplete,
+  csvAnalysis,
 }: {
   onAnalysisComplete: (data: string) => void;
+  csvAnalysis: string | null;
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -126,15 +129,15 @@ export default function FileUpload({
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch("/api/analyze-csv", {
-        method: "POST",
-        body: formData,
+      const response = await axios.post("/api/analyze-csv", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      const data = await response.text();
-      onAnalysisComplete(data); // Send result to parent component
+      onAnalysisComplete(response?.data);
       clearFile();
-    } catch (err) {
+    } catch {
       setError("Failed to process CSV.");
     } finally {
       setIsSubmitting(false);
@@ -161,11 +164,11 @@ export default function FileUpload({
   };
 
   return (
-    <div className="w-full max-w-2xl">
+    <div className={`w-full ${!csvAnalysis ? "max-w-2xl" : ""}`}>
       <div
         className={cn(
-          "relative border rounded-lg p-4 min-h-[120px] bg-background transition-colors",
-          "border-input hover:border-primary/50 focus-within:border-primary",
+          "relative border rounded-lg p-3 min-h-[120px] bg-background transition-colors",
+          "border-input hover:border-indigo-600 focus-within:border-indigo-600",
           isDragging && "border-primary border-dashed bg-primary/5",
           error && "border-destructive"
         )}
@@ -179,8 +182,8 @@ export default function FileUpload({
             htmlFor="file-upload"
             className={cn(
               "flex items-center justify-center w-full cursor-pointer",
-              "rounded-md border-2 border-dashed p-4 transition-colors",
-              "border-muted-foreground/25 hover:border-primary/50",
+              "rounded-md border-2 border-dashed p-2 transition-colors",
+              "border-muted-foreground/25 hover:border-indigo-600",
               isDragging && "border-primary bg-primary/5",
               selectedFile && "border-none p-0 justify-start"
             )}
@@ -264,14 +267,14 @@ export default function FileUpload({
           <div className="flex justify-end mt-2">
             <Button
               type="button"
-              className="rounded-full"
+              className={`rounded-full bg-indigo-600 hover:bg-indigo-700`}
               onClick={handleSubmit}
               disabled={!selectedFile || isSubmitting}
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
+                  Analyzing...
                 </>
               ) : (
                 <>
