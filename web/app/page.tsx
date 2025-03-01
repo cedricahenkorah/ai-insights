@@ -5,24 +5,69 @@ import { Card } from "@/components/ui/card";
 import { Bot } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+export type ChatEntry = {
+  question: string;
+  answer: string;
+};
 
 export default function Chat() {
-  const [csvAnalysis, setCsvAnalysis] = useState<string | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatEntry[]>([]);
+
+  function handleAnalysisResponse(response: ChatEntry) {
+    setChatHistory((prevHistory) => [...prevHistory, response]);
+  }
 
   return (
     <div
       className={`flex flex-col w-full max-w-6xl mx-auto ${
-        csvAnalysis ? "h-screen" : ""
+        chatHistory?.length > 0 ? "h-screen" : ""
       }`}
     >
       <div className="flex-1 overflow-auto p-6 space-y-6">
-        {csvAnalysis ? (
-          <Card className="p-4 bg-muted">
-            <p className="font-semibold">CSV Analysis:</p>
-            <div className="text-sm prose prose-lg space-y-6">
-              <ReactMarkdown>{csvAnalysis}</ReactMarkdown>
+        {chatHistory.length > 0 ? (
+          chatHistory.map((entry, index) => (
+            <div key={index} className="space-y-3">
+              {entry.question && (
+                <div className="flex justify-end">
+                  <div className="max-w-[80%] rounded-lg p-4 bg-indigo-600 text-white rounded-tr-none">
+                    <div className="whitespace-pre-wrap text-sm">
+                      {entry.question}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <Card className="p-4 bg-muted">
+                <p className="font-semibold">CSV Analysis Result</p>
+                <div className="text-sm prose prose-lg space-y-6 overflow-x-auto">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      table: ({ children }) => (
+                        <table className="table-auto border-collapse border border-gray-300 w-full">
+                          {children}
+                        </table>
+                      ),
+                      th: ({ children }) => (
+                        <th className="border border-gray-300 bg-gray-200 px-4 py-2 text-left">
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td className="border border-gray-300 px-4 py-2">
+                          {children}
+                        </td>
+                      ),
+                    }}
+                  >
+                    {entry.answer}
+                  </ReactMarkdown>
+                </div>
+              </Card>
             </div>
-          </Card>
+          ))
         ) : (
           <div className="flex flex-col items-center">
             <div className="flex items-center mb-4">
@@ -34,7 +79,7 @@ export default function Chat() {
               </div>
             </div>
 
-            <div className="text-center max-w-2xl mb-8">
+            <div className="text-center max-w-2xl mb-8 text-gray-600">
               <p className="mb-4">
                 Upload CSV files to extract AI-powered financial insights.
                 Analyze market trends, assess investment performance, and
@@ -61,7 +106,10 @@ export default function Chat() {
       </div>
 
       <div className="sticky bottom-0 p-4 flex justify-center">
-        <FileUpload onAnalysisComplete={setCsvAnalysis} />
+        <FileUpload
+          onAnalysisComplete={handleAnalysisResponse}
+          csvAnalysis={chatHistory}
+        />
       </div>
     </div>
   );

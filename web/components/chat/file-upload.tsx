@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,21 +10,24 @@ import {
   ImageIcon,
   Loader2,
   Paperclip,
+  Plus,
   Send,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import axios from "axios";
+import { ChatEntry } from "@/app/page";
 
 export default function FileUpload({
   onAnalysisComplete,
   csvAnalysis,
 }: {
-  onAnalysisComplete: (data: string) => void;
-  csvAnalysis: string | null;
+  onAnalysisComplete: (data: { question: string; answer: string }) => void;
+  csvAnalysis: ChatEntry[];
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [question, setQuestion] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,9 +89,9 @@ export default function FileUpload({
     // For smaller files, we could implement a preview here
     return (
       <div className="mt-2 p-3 bg-muted rounded-md text-sm">
-        <p className="font-medium">CSV file detected</p>
+        <p className="font-medium">CSV file uploaded</p>
         <p className="text-muted-foreground">
-          Ready to process {selectedFile.name}
+          {selectedFile.name} is ready for processing.
         </p>
       </div>
     );
@@ -128,17 +130,14 @@ export default function FileUpload({
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
+      if (question) formData.append("question", question);
 
-      const response = await axios.post("/api/analyze-csv", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post("/api/analyze-csv", formData);
 
-      onAnalysisComplete(response?.data);
+      onAnalysisComplete({ question, answer: response.data });
       clearFile();
     } catch {
-      setError("Failed to process CSV.");
+      setError("Failed to analyze file. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -163,12 +162,15 @@ export default function FileUpload({
     return <File className="h-5 w-5 text-blue-500" />;
   };
 
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
-    <div className={`w-full ${!csvAnalysis ? "max-w-2xl" : ""}`}>
+    <div className={`w-full ${csvAnalysis?.length === 0 ? "max-w-2xl" : ""}`}>
       <div
         className={cn(
-          "relative border rounded-lg p-3 min-h-[120px] bg-background transition-colors",
-          "border-input hover:border-indigo-600 focus-within:border-indigo-600",
+          "relative bg-white rounded-3xl shadow-sm border border-gray-200 p-4",
           isDragging && "border-primary border-dashed bg-primary/5",
           error && "border-destructive"
         )}
@@ -176,67 +178,42 @@ export default function FileUpload({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
+        <div className="mb-3">
+          <input
+            type="text"
+            placeholder="Ask anything"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="w-full outline-none text-gray-700 text-lg placeholder-gray-400"
+          />
+        </div>
         <div className="flex flex-col gap-2">
-          {/* File Input Area */}
-          <label
-            htmlFor="file-upload"
-            className={cn(
-              "flex items-center justify-center w-full cursor-pointer",
-              "rounded-md border-2 border-dashed p-2 transition-colors",
-              "border-muted-foreground/25 hover:border-indigo-600",
-              isDragging && "border-primary bg-primary/5",
-              selectedFile && "border-none p-0 justify-start"
-            )}
-          >
-            {!selectedFile ? (
-              <div className="flex flex-col items-center gap-2 text-center">
-                <Paperclip className="h-8 w-8 text-muted-foreground" />
-                <div>
-                  <p className="font-medium text-foreground">
-                    Drop your file here or click to browse
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Support for images, PDFs, CSV, and text files (max 10MB)
-                  </p>
-                </div>
+          {selectedFile && (
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-md w-full">
+              {getFileIcon()}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {selectedFile.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {(selectedFile.size / 1024).toFixed(1)} KB
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-md w-full">
-                {getFileIcon()}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {selectedFile.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {(selectedFile.size / 1024).toFixed(1)} KB
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    clearFile();
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Remove file</span>
-                </Button>
-              </div>
-            )}
-            <input
-              id="file-upload"
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              onChange={handleFileChange}
-              // accept="image/*,.pdf,.txt,.md,.csv"
-              accept=".csv"
-              aria-label="Upload file"
-            />
-          </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                onClick={(e) => {
+                  e.preventDefault();
+                  clearFile();
+                }}
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Remove file</span>
+              </Button>
+            </div>
+          )}
 
           {/* Image Preview */}
           {previewUrl && (
@@ -264,7 +241,25 @@ export default function FileUpload({
           )}
 
           {/* Submit Button */}
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-between items-center">
+            <div className="inline-block">
+              <label
+                htmlFor="file-upload"
+                className="flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full cursor-pointer transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Attach</span>
+                <input
+                  id="file-upload"
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  accept=".csv"
+                  aria-label="Upload file"
+                />
+              </label>
+            </div>
             <Button
               type="button"
               className={`rounded-full bg-indigo-600 hover:bg-indigo-700`}
