@@ -4,18 +4,31 @@ import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { parse } from "papaparse";
+import { ChatEntry } from "../page";
 
-export async function analyzeCSV(file: File, question?: string) {
+export async function analyzeCSV(
+  file: File,
+  question?: string,
+  history: ChatEntry[] = []
+) {
   const textData = await file.text();
   const parsedData = parse(textData, { header: true }).data;
+
+  const conversationHistory = history
+    .map((entry) => `Q: ${entry.question}\nA: ${entry.answer}`)
+    .join("\n\n");
 
   let prompt = `You are a financial data analyst expert specializing in CSV-based financial data analysis. Analyze the following dataset:\n\n${JSON.stringify(
     parsedData
   )}\n\n`;
 
-  if (question) {
+  if (conversationHistory) {
+    prompt += `Here is the previous conversation for context:\n${conversationHistory}\n\n Answer this specific follow-up question based on the context and data: "${question}"\n`;
+  }
+
+  if (question && !conversationHistory) {
     prompt += `\n\nAnswer this specific question based on the data: "${question}". Ensure the response is **direct, data-driven, and actionable**. Start with the answer first, then briefly support it with key insights.\n\n`;
-  } else {
+  } else if (!question && !conversationHistory) {
     prompt += `
     Perform a structured and detailed analysis, starting with a **clear and concise summary of key insights first**, followed by a deeper breakdown into these sections:
 
