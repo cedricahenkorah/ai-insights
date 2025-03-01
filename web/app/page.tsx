@@ -3,7 +3,7 @@
 import FileUpload from "@/components/chat/file-upload";
 import { Card } from "@/components/ui/card";
 import { Bot } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -14,10 +14,20 @@ export type ChatEntry = {
 
 export default function Chat() {
   const [chatHistory, setChatHistory] = useState<ChatEntry[]>([]);
+  const latestMessageRef = useRef<HTMLDivElement | null>(null);
 
   function handleAnalysisResponse(response: ChatEntry) {
     setChatHistory((prevHistory) => [...prevHistory, response]);
   }
+
+  useEffect(() => {
+    if (latestMessageRef.current) {
+      latestMessageRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [chatHistory]);
 
   return (
     <div
@@ -28,7 +38,11 @@ export default function Chat() {
       <div className="flex-1 overflow-auto p-6 space-y-6">
         {chatHistory.length > 0 ? (
           chatHistory.map((entry, index) => (
-            <div key={index} className="space-y-3">
+            <div
+              key={index}
+              className="space-y-3"
+              ref={index === chatHistory.length - 1 ? latestMessageRef : null}
+            >
               {entry.question && (
                 <div className="flex justify-end">
                   <div className="max-w-[80%] rounded-lg p-4 bg-indigo-600 text-white rounded-tr-none">
