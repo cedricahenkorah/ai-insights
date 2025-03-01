@@ -27,6 +27,7 @@ export default function FileUpload({
   csvAnalysis: ChatEntry[];
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [lastFile, setLastFile] = useState<File | null>(null);
   const [question, setQuestion] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -135,6 +136,7 @@ export default function FileUpload({
       const response = await axios.post("/api/analyze-csv", formData);
 
       onAnalysisComplete({ question, answer: response.data });
+      setLastFile(selectedFile);
       clearFile();
     } catch {
       setError("Failed to analyze file. Please try again.");
@@ -142,6 +144,28 @@ export default function FileUpload({
       setIsSubmitting(false);
     }
   };
+
+  async function handleFollowUp() {
+    if (!question.trim()) return;
+    if (!lastFile) return;
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", lastFile);
+      formData.append("question", question);
+      formData.append("history", JSON.stringify(csvAnalysis));
+
+      const response = await axios.post("/api/analyze-csv", formData);
+
+      onAnalysisComplete({ question, answer: response.data });
+      setQuestion("");
+    } catch (error) {
+      setError("Failed to provide a response. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   const getFileIcon = () => {
     if (!selectedFile)
@@ -181,7 +205,11 @@ export default function FileUpload({
         <div className="mb-3">
           <input
             type="text"
-            placeholder="Ask anything"
+            placeholder={` ${
+              csvAnalysis?.length === 0
+                ? "Ask anything or submit your file for a general financial analysis."
+                : "Ask a follow-up question..."
+            } `}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             className="w-full outline-none text-gray-700 text-lg placeholder-gray-400"
@@ -260,24 +288,45 @@ export default function FileUpload({
                 />
               </label>
             </div>
-            <Button
-              type="button"
-              className={`rounded-full bg-indigo-600 hover:bg-indigo-700`}
-              onClick={handleSubmit}
-              disabled={!selectedFile || isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2" />
-                  Analyze CSV
-                </>
-              )}
-            </Button>
+            {csvAnalysis?.length === 0 ? (
+              <Button
+                type="button"
+                className={`rounded-full bg-indigo-600 hover:bg-indigo-700`}
+                onClick={handleSubmit}
+                disabled={!selectedFile || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Analyze CSV
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                className={`rounded-full bg-indigo-600 hover:bg-indigo-700`}
+                onClick={handleFollowUp}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </div>
