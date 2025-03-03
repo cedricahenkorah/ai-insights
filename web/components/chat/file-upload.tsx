@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import axios from "axios";
-import { ChatEntry } from "@/app/page";
+import { ChatEntry } from "@/app/(chat)/page";
 
 export default function FileUpload({
   onAnalysisComplete,
