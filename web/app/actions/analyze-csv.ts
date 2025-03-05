@@ -4,7 +4,7 @@ import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { parse } from "papaparse";
-import { ChatEntry } from "../page";
+import { ChatEntry } from "../(chat)/page";
 
 export async function analyzeCSV(
   file: File,

@@ -54,7 +54,14 @@ export default function Chat() {
               )}
 
               <Card className="p-4 bg-muted">
-                <p className="font-semibold">CSV Analysis Result</p>
+                <div className="flex justify-between items-center">
+                  <p className="font-semibold text-sm">CSV Analysis Result</p>
+
+                  {/* <Button className="flex items-center gap-2 text-sm cursor-pointer text-gray-600 font-medium" variant="ghost">
+                    <Download className="h-4 w-4" /> Download
+                  </Button> */}
+                </div>
+
                 <div className="text-sm prose prose-lg space-y-6 overflow-x-auto">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
