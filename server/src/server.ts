@@ -1,13 +1,27 @@
 import "dotenv/config";
-import express from "express";
+import http from "http";
+import app from "./app";
+import mongoose from "mongoose";
+import { connectDB } from "./config/db";
+import { logger } from "./config/logger";
 
-const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
+const server = http.createServer(app);
 
-app.get("/", (req, res) => {
-  res.send("Hello, AI Insights");
+mongoose.connection.once("open", () => {
+  logger.info("MongoDB connection ready");
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+mongoose.connection.on("error", (err: any) => {
+  logger.error("MongoDB connection error", err);
 });
+
+async function startServer() {
+  connectDB();
+
+  server.listen(PORT, () => {
+    logger.info(`AI-Insights is running on port ${PORT}`);
+  });
+}
+
+startServer();
