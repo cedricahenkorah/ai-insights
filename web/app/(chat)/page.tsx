@@ -1,6 +1,6 @@
 "use client";
 
-import FileUpload from "@/components/chat/file-upload";
+import ChatInput from "@/components/chat/chat-input";
 import { Card } from "@/components/ui/card";
 import { Bot } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -100,7 +100,7 @@ export default function Chat() {
               </div>
             </div>
 
-            <div className="text-center max-w-2xl mb-8 text-gray-600">
+            <div className="text-center max-w-2xl mb-8 text-black">
               <p className="mb-4">
                 Upload CSV files to extract AI-powered financial insights.
                 Analyze market trends, assess investment performance, and
@@ -127,7 +127,7 @@ export default function Chat() {
       </div>
 
       <div className="sticky bottom-0 p-4 flex justify-center">
-        <FileUpload
+        <ChatInput
           onAnalysisComplete={handleAnalysisResponse}
           csvAnalysis={chatHistory}
         />
