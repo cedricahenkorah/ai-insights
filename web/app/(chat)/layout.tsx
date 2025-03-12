@@ -35,7 +35,11 @@ export default function ChatLayout({
       <AppSidebar />
       <SidebarInset className="p-4">
         <div className="flex justify-between items-center">
-          <ToggleSidebar />
+          <div className="flex items-center gap-2">
+            <ToggleSidebar />
+
+            <h1 className="text-indigo-600 font-semibold">AI Insights</h1>
+          </div>
 
           {user ? (
             <Avatar className="hover:scale-110 transition-transform duration-200 w-14 h-14">
