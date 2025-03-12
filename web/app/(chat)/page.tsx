@@ -3,9 +3,11 @@
 import ChatInput from "@/components/chat/chat-input";
 import { Card } from "@/components/ui/card";
 import { Bot } from "lucide-react";
+import { User } from "next-auth";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { GetSession } from "../actions/get-session";
 
 export type ChatEntry = {
   question: string;
@@ -15,6 +17,21 @@ export type ChatEntry = {
 export default function Chat() {
   const [chatHistory, setChatHistory] = useState<ChatEntry[]>([]);
   const latestMessageRef = useRef<HTMLDivElement | null>(null);
+
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    async function fetchSession() {
+      const session = await GetSession();
+
+      if (session?.user) {
+        console.log(session?.user);
+        setUser(session?.user);
+      }
+    }
+
+    fetchSession();
+  }, []);
 
   function handleAnalysisResponse(response: ChatEntry) {
     setChatHistory((prevHistory) => [...prevHistory, response]);
@@ -35,7 +52,7 @@ export default function Chat() {
         chatHistory?.length > 0 ? "h-screen" : ""
       }`}
     >
-      <div className="flex-1 overflow-auto p-6 space-y-6">
+      <div className="flex-1 overflow-auto space-y-6">
         {chatHistory.length > 0 ? (
           chatHistory.map((entry, index) => (
             <div
@@ -91,42 +108,54 @@ export default function Chat() {
           ))
         ) : (
           <div className="flex flex-col items-center">
-            <div className="flex items-center mb-4">
-              <div className="bg-white rounded-full p-2 mr-2 flex gap-x-2 items-center">
-                <Bot className="h-8 w-8 text-indigo-600" />
-                <span className="font-bold text-base lg:text-2xl text-indigo-600">
-                  AI INSIGHTS
-                </span>
+            {user ? (
+              <div className="text-pretty text-center text-[29px] font-semibold tracking-tighter text-gray-900 sm:text-[32px] md:text-[46px] mt-52">
+                Let’s make sense of your numbers!
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center mb-4 mt-10">
+                  <div className="bg-white rounded-full p-2 mr-2 flex gap-x-2 items-center">
+                    <Bot className="h-8 w-8 text-indigo-600" />
+                    <span className="font-bold text-base lg:text-2xl text-indigo-600">
+                      AI INSIGHTS
+                    </span>
+                  </div>
+                </div>
 
-            <div className="text-center max-w-2xl mb-8 text-black">
-              <p className="mb-4">
-                Upload CSV files to extract AI-powered financial insights.
-                Analyze market trends, assess investment performance, and
-                uncover key data patterns effortlessly.
-              </p>
-            </div>
+                <div className="text-center max-w-2xl mb-8 text-black">
+                  <p className="mb-4">
+                    Upload CSV files to extract AI-powered financial insights.
+                    Analyze market trends, assess investment performance, and
+                    uncover key data patterns effortlessly.
+                  </p>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-8">
-              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
-                <p>Analyze revenue trends from my financial data.</p>
-              </Card>
-              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
-                <p>Identify key spending patterns in my CSV file.</p>
-              </Card>
-              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
-                <p>Predict future cash flow based on historical data.</p>
-              </Card>
-              <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
-                <p>Summarize my investment portfolio performance.</p>
-              </Card>
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-8">
+                  <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
+                    <p>Analyze revenue trends from my financial data.</p>
+                  </Card>
+                  <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
+                    <p>Identify key spending patterns in my CSV file.</p>
+                  </Card>
+                  <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
+                    <p>Predict future cash flow based on historical data.</p>
+                  </Card>
+                  <Card className="border-indigo-200 p-4 transition-colors cursor-pointer hover:bg-indigo-100">
+                    <p>Summarize my investment portfolio performance.</p>
+                  </Card>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
 
-      <div className="sticky bottom-0 p-4 flex justify-center">
+      <div
+        className={`${
+          chatHistory?.length > 0 ? "sticky bottom-0" : ""
+        }  p-4 flex justify-center`}
+      >
         <ChatInput
           onAnalysisComplete={handleAnalysisResponse}
           csvAnalysis={chatHistory}
