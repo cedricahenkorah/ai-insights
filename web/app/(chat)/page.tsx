@@ -48,7 +48,7 @@ export default function Chat() {
 
   return (
     <div
-      className={`flex flex-col w-full max-w-6xl mx-auto ${
+      className={`flex flex-col w-full max-w-6xl mx-auto py-5 ${
         chatHistory?.length > 0 ? "h-screen" : ""
       }`}
     >
@@ -57,7 +57,7 @@ export default function Chat() {
           chatHistory.map((entry, index) => (
             <div
               key={index}
-              className="space-y-3"
+              className="space-y-3 pb-20 pt-20"
               ref={index === chatHistory.length - 1 ? latestMessageRef : null}
             >
               {entry.question && (
@@ -79,7 +79,7 @@ export default function Chat() {
                   </Button> */}
                 </div>
 
-                <div className="text-sm prose prose-lg space-y-6 overflow-x-auto">
+                <div className="text-sm prose prose-lg space-y-6 overflow-y-auto">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -89,7 +89,7 @@ export default function Chat() {
                         </table>
                       ),
                       th: ({ children }) => (
-                        <th className="border border-gray-300 bg-gray-200 px-4 py-2 text-left">
+                        <th className="border border-gray-300 bg-gray-200 dark:text-black px-4 py-2 text-left">
                           {children}
                         </th>
                       ),
@@ -109,7 +109,7 @@ export default function Chat() {
         ) : (
           <div className="flex flex-col items-center">
             {user ? (
-              <div className="text-pretty text-center text-[29px] font-semibold tracking-tighter text-gray-900 sm:text-[32px] md:text-[46px] mt-52">
+              <div className="text-pretty text-center text-[29px] font-semibold tracking-tighter text-gray-900 dark:text-white sm:text-[32px] md:text-[46px] mt-52">
                 Let’s make sense of your numbers!
               </div>
             ) : (

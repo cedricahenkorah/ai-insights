@@ -198,7 +198,8 @@ export default function ChatInput({
           "relative bg-white rounded-3xl shadow-sm border border-gray-200 p-4",
           isDragging && "border-primary border-dashed bg-primary/5",
           error && "border-destructive",
-          isFocused && "border-indigo-500 ring-2 ring-indigo-300"
+          isFocused &&
+            "border-indigo-500 dark:border-indigo-700 ring-2 ring-indigo-300 dark:ring-indigo-500"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -221,10 +222,10 @@ export default function ChatInput({
         </div>
         <div className="flex flex-col gap-2">
           {selectedFile && (
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-md w-full">
+            <div className="flex items-center gap-3 p-3 bg-muted/50 dark:bg-gray-100 rounded-md w-full">
               {getFileIcon()}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
+                <p className="text-sm font-medium text-foreground dark:text-black truncate">
                   {selectedFile.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -300,15 +301,15 @@ export default function ChatInput({
                 disabled={!selectedFile || isSubmitting}
               >
                 {isSubmitting ? (
-                  <>
+                  <div className="flex items-center dark:text-white">
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Analyzing...
-                  </>
+                  </div>
                 ) : (
-                  <>
+                  <div className="flex items-center dark:text-white">
                     <Send className="h-4 w-4 mr-2" />
                     Analyze CSV
-                  </>
+                  </div>
                 )}
               </Button>
             ) : (
@@ -319,15 +320,15 @@ export default function ChatInput({
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <>
+                  <div className="flex items-center dark:text-white">
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing...
-                  </>
+                  </div>
                 ) : (
-                  <>
+                  <div className="flex items-center dark:text-white">
                     <Send className="h-4 w-4 mr-2" />
                     Send
-                  </>
+                  </div>
                 )}
               </Button>
             )}
